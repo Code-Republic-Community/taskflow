@@ -1,0 +1,82 @@
+name: PR checks
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  # The job ids "branch-name" and "pr-title" are required status checks on main: do not rename them.
+  branch-name:
+    name: branch-name
+    runs-on: ubuntu-latest
+    # A skipped job counts as passed, so dependabot PRs are not blocked.
+    if: github.actor != 'dependabot[bot]'
+    steps:
+      - name: Check branch name
+        env:
+          BRANCH: ${{ github.head_ref }}
+        run: |
+          pattern='^(feature|fix|hotfix|chore|docs|test|refactor)/TF-[0-9]+-[a-z0-9-]+$'
+          if [[ "$BRANCH" =~ $pattern ]]; then
+            echo "Branch name OK: $BRANCH"
+          else
+            echo "::error::Branch \"$BRANCH\" does not match <type>/TF-<n>-<short-description>"
+            echo "Types: feature, fix, hotfix, chore, docs, test, refactor"
+            echo "Example: feature/TF-6-issue-key-generation"
+            echo "Rename it with: git branch -m <new-name> && git push origin -u <new-name>"
+            echo "(then close this PR and open a new one from the renamed branch)"
+            exit 1
+          fi
+
+  pr-title:
+    name: pr-title
+    runs-on: ubuntu-latest
+    steps:
+      # The PR title becomes the squash-merge commit message, so it follows the commit convention.
+      - uses: amannn/action-semantic-pull-request@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            feat
+            fix
+            refactor
+            test
+            docs
+            style
+            chore
+            ci
+            perf
+          scopes: |
+            auth
+            projects
+            issues
+            board
+            sprints
+            comments
+            search
+            notifications
+            dashboard
+            ui
+            api
+            db
+            ci
+            deps
+          requireScope: false
+          subjectPattern: ^TF-\d+ .+$
+          subjectPatternError: |
+            The subject "{subject}" in the PR title "{title}" must start with the Jira key,
+            e.g. "feat(issues): TF-6 add issue key generation".
+
+      - name: Check title length (max 72)
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          if (( ${#TITLE} > 72 )); then
+            echo "::error::PR title is ${#TITLE} characters; the maximum is 72."
+            exit 1
+          fi
