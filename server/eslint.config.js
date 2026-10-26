@@ -1,25 +1,29 @@
-const js = require("@eslint/js");
-const globals = require("globals");
-const prettier = require("eslint-config-prettier");
+import { defineConfig } from "eslint/config";
+import js from "@eslint/js";
+import tseslint from "typescript-eslint";
+import globals from "globals";
+import prettier from "eslint-config-prettier";
 
-module.exports = [
+export default defineConfig(
   { ignores: ["node_modules/", "coverage/"] },
   js.configs.recommended,
+  tseslint.configs.recommended,
   {
-    files: ["**/*.js"],
+    // Each workspace has its own tsconfig; anchor typescript-eslint to this folder so it
+    // also works when ESLint runs from the repo root (lint-staged).
+    languageOptions: { parserOptions: { tsconfigRootDir: import.meta.dirname } },
+  },
+  {
+    files: ["**/*.{ts,js}"],
     languageOptions: {
       ecmaVersion: "latest",
-      sourceType: "commonjs",
+      sourceType: "module",
       globals: { ...globals.node },
     },
     rules: {
-      "no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
+      "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
       "no-console": ["warn", { allow: ["warn", "error", "info"] }],
     },
   },
-  {
-    files: ["tests/**/*.js"],
-    languageOptions: { globals: { ...globals.jest } },
-  },
   prettier,
-];
+);

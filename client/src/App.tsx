@@ -1,8 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
-import { api, getErrorMessage } from "./api/client";
+import { api, getErrorMessage, type ApiResponse } from "./api/client";
 
-async function fetchHealth() {
-  const res = await api.get("/health");
+interface Health {
+  status: "ok";
+  db: "connected" | "disconnected";
+}
+
+async function fetchHealth(): Promise<Health> {
+  const res = await api.get<ApiResponse<Health>>("/health");
   return res.data.data;
 }
 

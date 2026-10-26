@@ -1,4 +1,5 @@
-const { parsePagination } = require("../src/utils/pagination");
+import { describe, expect, it } from "vitest";
+import { parsePagination } from "../src/utils/pagination.ts";
 
 describe("parsePagination", () => {
   it("uses defaults", () => {

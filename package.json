@@ -12,7 +12,8 @@
   },
   "scripts": {
     "dev": "concurrently -n server,client -c blue,magenta \"npm run dev -w server\" \"npm run dev -w client\"",
-    "lint": "npm run lint -w server && npm run lint -w client",
+    "lint": "npm run lint -w server && npm run lint -w client && npm run typecheck",
+    "typecheck": "npm run typecheck -w server && npm run typecheck -w client",
     "test": "npm run test -w server && npm run test -w client",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

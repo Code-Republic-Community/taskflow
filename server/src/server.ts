@@ -1,12 +1,13 @@
-const config = require("./config/env");
-const { connectDB, disconnectDB } = require("./data/db");
-const createApp = require("./app");
+import { config } from "./config/env.ts";
+import { connectDB, disconnectDB } from "./data/db.ts";
+import { createApp } from "./app.ts";
 
-async function start() {
+async function start(): Promise<void> {
   try {
     await connectDB();
   } catch (err) {
-    console.error(`[server] could not connect to MongoDB at ${config.mongodbUri}: ${err.message}`);
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(`[server] could not connect to MongoDB at ${config.mongodbUri}: ${message}`);
     process.exit(1);
   }
 
@@ -14,7 +15,7 @@ async function start() {
     console.info(`[server] listening on http://localhost:${config.port} (${config.nodeEnv})`);
   });
 
-  const shutdown = (signal) => {
+  const shutdown = (signal: NodeJS.Signals): void => {
     console.info(`[server] ${signal} received, shutting down`);
     server.close(async () => {
       await disconnectDB();
@@ -25,4 +26,4 @@ async function start() {
   process.on("SIGTERM", shutdown);
 }
 
-start();
+void start();

@@ -1,23 +1,24 @@
-const express = require("express");
-const mongoose = require("mongoose");
-const request = require("supertest");
-const { z } = require("zod");
-const createApp = require("../src/app");
-const AppError = require("../src/utils/AppError");
-const validate = require("../src/middlewares/validate");
-const errorHandler = require("../src/middlewares/errorHandler");
+import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from "vitest";
+import express, { type Express } from "express";
+import mongoose from "mongoose";
+import request from "supertest";
+import { z } from "zod";
+import { createApp } from "../src/app.ts";
+import { AppError } from "../src/utils/AppError.ts";
+import { validate } from "../src/middlewares/validate.ts";
+import { errorHandler } from "../src/middlewares/errorHandler.ts";
 
-// A test-only app: the routes below throw on purpose and are never part of src/app.js.
-function buildTestApp() {
+// A test-only app: the routes below throw on purpose and are never part of src/app.ts.
+function buildTestApp(): Express {
   const app = express();
   app.use(express.json());
 
   app.get("/zod", () => {
     z.object({ title: z.string() }).parse({ title: 42 });
   });
-  app.post("/validated", validate({ body: z.object({ title: z.string().min(3) }) }), (req, res) =>
-    res.json({ data: req.body }),
-  );
+  app.post("/validated", validate({ body: z.object({ title: z.string().min(3) }) }), (req, res) => {
+    res.json({ data: req.body });
+  });
   app.get("/app-error", () => {
     throw new AppError("Project not found", 404, "NOT_FOUND");
   });
@@ -33,17 +34,17 @@ function buildTestApp() {
   });
   app.get("/mongoose-validation", async () => {
     const schema = new mongoose.Schema({ name: { type: String, required: true } });
-    const Model = mongoose.models.Thing || mongoose.model("Thing", schema);
+    const Model = mongoose.models.Thing ?? mongoose.model("Thing", schema);
     await new Model({}).validate();
   });
   app.get("/cast", () => {
     throw new mongoose.Error.CastError("ObjectId", "abc", "_id");
   });
   app.get("/duplicate", () => {
-    const err = new Error("E11000 duplicate key error");
-    err.code = 11000;
-    err.keyValue = { email: "a@b.c" };
-    throw err;
+    throw Object.assign(new Error("E11000 duplicate key error"), {
+      code: 11000,
+      keyValue: { email: "a@b.c" },
+    });
   });
 
   app.use(errorHandler);
@@ -52,12 +53,14 @@ function buildTestApp() {
 
 describe("errorHandler", () => {
   const app = buildTestApp();
-  let consoleError;
+  let consoleError: MockInstance<typeof console.error>;
 
   beforeEach(() => {
-    consoleError = jest.spyOn(console, "error").mockImplementation(() => {});
+    consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
   });
-  afterEach(() => consoleError.mockRestore());
+  afterEach(() => {
+    consoleError.mockRestore();
+  });
 
   it("maps a ZodError to 400 VALIDATION_ERROR with field details", async () => {
     const res = await request(app).get("/zod");
@@ -145,9 +148,9 @@ describe("errorHandler", () => {
   });
 
   it("hides the message of unexpected errors in production", async () => {
-    jest.resetModules();
-    jest.doMock("../src/config/env", () => ({ isProduction: true }));
-    const prodHandler = require("../src/middlewares/errorHandler");
+    vi.resetModules();
+    vi.doMock("../src/config/env.ts", () => ({ config: { isProduction: true } }));
+    const { errorHandler: prodHandler } = await import("../src/middlewares/errorHandler.ts");
     const prodApp = express();
     prodApp.get("/plain", () => {
       throw new Error("secret internals");
@@ -158,6 +161,6 @@ describe("errorHandler", () => {
 
     expect(res.status).toBe(500);
     expect(res.body).toEqual({ error: { code: "INTERNAL", message: "Something went wrong" } });
-    jest.dontMock("../src/config/env");
+    vi.doUnmock("../src/config/env.ts");
   });
 });

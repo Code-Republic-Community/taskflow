@@ -1,8 +1,8 @@
-const path = require("node:path");
-const dotenv = require("dotenv");
-const { z } = require("zod");
+import path from "node:path";
+import dotenv from "dotenv";
+import { z } from "zod";
 
-dotenv.config({ path: path.resolve(__dirname, "../../.env"), quiet: true });
+dotenv.config({ path: path.resolve(import.meta.dirname, "../../.env"), quiet: true });
 
 const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
@@ -25,7 +25,7 @@ if (!parsed.success) {
 
 const env = parsed.data;
 
-const config = Object.freeze({
+export const config = Object.freeze({
   nodeEnv: env.NODE_ENV,
   isProduction: env.NODE_ENV === "production",
   isTest: env.NODE_ENV === "test",
@@ -36,4 +36,4 @@ const config = Object.freeze({
   clientUrl: env.CLIENT_URL,
 });
 
-module.exports = config;
+export type Config = typeof config;
