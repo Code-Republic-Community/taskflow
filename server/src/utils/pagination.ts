@@ -1,8 +1,14 @@
-const DEFAULT_LIMIT = 20;
-const MAX_LIMIT = 100;
+export const DEFAULT_LIMIT = 20;
+export const MAX_LIMIT = 100;
 
-function toPositiveInt(value, fallback) {
-  const n = Number.parseInt(value, 10);
+export interface Pagination {
+  page: number;
+  limit: number;
+  skip: number;
+}
+
+function toPositiveInt(value: unknown, fallback: number): number {
+  const n = Number.parseInt(String(value), 10);
   return Number.isInteger(n) && n > 0 ? n : fallback;
 }
 
@@ -11,10 +17,8 @@ function toPositiveInt(value, fallback) {
  * Invalid values fall back to the defaults; limit is capped at MAX_LIMIT.
  * Build the list response as: { data: items, meta: { page, limit, total } }
  */
-function parsePagination(query = {}) {
+export function parsePagination(query: Record<string, unknown> = {}): Pagination {
   const page = toPositiveInt(query.page, 1);
   const limit = Math.min(toPositiveInt(query.limit, DEFAULT_LIMIT), MAX_LIMIT);
   return { page, limit, skip: (page - 1) * limit };
 }
-
-module.exports = { parsePagination, DEFAULT_LIMIT, MAX_LIMIT };

@@ -1,6 +1,7 @@
-const request = require("supertest");
-const createApp = require("../src/app");
-const db = require("./helpers/db");
+import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
+import request from "supertest";
+import { createApp } from "../src/app.ts";
+import * as db from "./helpers/db.ts";
 
 describe("GET /api/v1/health", () => {
   const app = createApp();

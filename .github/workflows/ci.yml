@@ -39,6 +39,9 @@ jobs:
       - name: Lint server
         run: npm run lint -w server
 
+      - name: Type-check server
+        run: npm run typecheck -w server
+
       - name: Test server
         run: npm run test -w server
 
@@ -59,6 +62,9 @@ jobs:
 
       - name: Lint client
         run: npm run lint -w client
+
+      - name: Type-check client
+        run: npm run typecheck -w client
 
       - name: Test client
         run: npm run test -w client

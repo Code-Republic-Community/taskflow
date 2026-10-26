@@ -1,21 +1,46 @@
-const mongoose = require("mongoose");
-const { ZodError } = require("zod");
-const config = require("../config/env");
-const AppError = require("../utils/AppError");
+import type { ErrorRequestHandler } from "express";
+import mongoose from "mongoose";
+import { ZodError } from "zod";
+import { config } from "../config/env.ts";
+import { AppError, codeForStatus, type ErrorCode } from "../utils/AppError.ts";
 
-function zodDetails(err) {
+interface NormalizedError {
+  statusCode: number;
+  code: ErrorCode;
+  message: string;
+  details?: unknown;
+}
+
+interface FieldError {
+  field: string;
+  message: string;
+}
+
+function zodDetails(err: ZodError): FieldError[] {
   return err.issues.map((issue) => ({
     field: issue.path.join(".") || "(root)",
     message: issue.message,
   }));
 }
 
-function mongooseDetails(err) {
+function mongooseDetails(err: mongoose.Error.ValidationError): FieldError[] {
   return Object.values(err.errors).map((e) => ({ field: e.path, message: e.message }));
 }
 
-// Turns any thrown value into { statusCode, code, message, details? }.
-function normalize(err) {
+// Shape of errors thrown by the MongoDB driver and by express.json (body-parser).
+interface ErrorLike {
+  code?: unknown;
+  keyValue?: Record<string, unknown>;
+  keyPattern?: Record<string, unknown>;
+  type?: unknown;
+  expose?: unknown;
+  status?: unknown;
+  message?: unknown;
+  stack?: unknown;
+}
+
+// Turns any thrown value into { statusCode, code, message, details? }, or null if unexpected.
+function normalize(err: unknown): NormalizedError | null {
   if (err instanceof AppError) {
     return {
       statusCode: err.statusCode,
@@ -52,8 +77,11 @@ function normalize(err) {
     };
   }
 
-  if (err?.code === 11000) {
-    const field = Object.keys(err.keyValue ?? err.keyPattern ?? {})[0];
+  if (typeof err !== "object" || err === null) return null;
+  const e = err as ErrorLike;
+
+  if (e.code === 11000) {
+    const field = Object.keys(e.keyValue ?? e.keyPattern ?? {})[0];
     return {
       statusCode: 409,
       code: "CONFLICT",
@@ -63,16 +91,16 @@ function normalize(err) {
   }
 
   // Malformed JSON body (thrown by express.json / body-parser).
-  if (err?.type === "entity.parse.failed") {
+  if (e.type === "entity.parse.failed") {
     return { statusCode: 400, code: "VALIDATION_ERROR", message: "Malformed JSON in request body" };
   }
 
   // Other body-parser errors (e.g. payload too large) carry a 4xx status.
-  if (err?.expose && err.status >= 400 && err.status < 500) {
+  if (e.expose === true && typeof e.status === "number" && e.status >= 400 && e.status < 500) {
     return {
-      statusCode: err.status,
-      code: AppError.STATUS_TO_CODE[err.status] ?? "VALIDATION_ERROR",
-      message: err.message,
+      statusCode: e.status,
+      code: codeForStatus(e.status) ?? "VALIDATION_ERROR",
+      message: String(e.message),
     };
   }
 
@@ -80,8 +108,8 @@ function normalize(err) {
 }
 
 // Express recognises an error handler by its 4 arguments, so _next must stay.
-function errorHandler(err, req, res, _next) {
-  let normalized;
+export const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
+  let normalized: NormalizedError | null;
   try {
     normalized = normalize(err);
   } catch {
@@ -89,13 +117,14 @@ function errorHandler(err, req, res, _next) {
   }
 
   if (!normalized) {
-    console.error(`[error] ${req.method} ${req.originalUrl}\n`, err?.stack ?? err);
+    const e = (err ?? {}) as ErrorLike;
+    console.error(`[error] ${req.method} ${req.originalUrl}\n`, e.stack ?? err);
     normalized = {
       statusCode: 500,
       code: "INTERNAL",
       message: config.isProduction
         ? "Something went wrong"
-        : err?.message || "Internal server error",
+        : (typeof e.message === "string" && e.message) || "Internal server error",
     };
   }
 
@@ -105,9 +134,9 @@ function errorHandler(err, req, res, _next) {
   }
 
   const { statusCode, code, message, details } = normalized;
-  const body = { error: { code, message } };
+  const body: { error: { code: ErrorCode; message: string; details?: unknown } } = {
+    error: { code, message },
+  };
   if (details !== undefined) body.error.details = details;
   res.status(statusCode).json(body);
-}
-
-module.exports = errorHandler;
+};

@@ -31,7 +31,7 @@ git pull --ff-only
 git switch -c feature/TF-6-issue-key-generation
 
 # work… then commit (hooks lint, format and check your message)
-git add server/src/services/issue.service.js server/tests/issues.test.js
+git add server/src/services/issue.service.ts server/tests/issues.test.ts
 git commit -m "feat(issues): TF-6 generate sequential issue keys per project"
 
 # before pushing, and whenever main moves: replay your commits on top of the latest main
@@ -156,7 +156,7 @@ PR title is what lands on `main`.
 - Never commit directly to `main` (it is protected).
 - Never commit `.env` files, secrets, API keys or `console.log` debugging.
 - Only touch files of your track, plus the shared files your ticket really needs. Changes to
-  shared files (`app.js`, `routes/index.js`, `models/constants.js`, `main.jsx`, configs) should
+  shared files (`app.ts`, `routes/index.ts`, `models/constants.ts`, `main.tsx`, configs) should
   be small and mentioned in the PR description.
 - Add dependencies only with `npm install <pkg> -w server|client` from the root, in their own
   `chore(deps)` commit, after asking the team. Never delete or regenerate `package-lock.json`;

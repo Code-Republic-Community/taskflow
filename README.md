@@ -4,11 +4,11 @@ TaskFlow is a Jira-like issue tracker: projects, issues with keys like `TF-42`, 
 board, sprints, comments, search, notifications and a dashboard. It is built by a class of 10
 students over 4 weeks, each student owning one feature track.
 
-| Layer  | Stack                                                                    |
-| ------ | ------------------------------------------------------------------------ |
-| Server | Node.js, Express 5, Mongoose 9 (MongoDB), Zod, JWT. CommonJS             |
-| Client | React 19, Vite, React Router, TanStack Query, axios, dnd-kit, Recharts   |
-| Tests  | Jest + Supertest + mongodb-memory-server (server), Vitest + RTL (client) |
+| Layer  | Stack                                                                                   |
+| ------ | --------------------------------------------------------------------------------------- |
+| Server | Node.js, Express 5, Mongoose 9 (MongoDB), Zod, JWT. TypeScript, ES modules              |
+| Client | React 19, Vite, React Router, TanStack Query, axios, dnd-kit, Recharts. TypeScript      |
+| Tests  | Vitest everywhere; Supertest + mongodb-memory-server (server), Testing Library (client) |
 
 Jira project key: **TF**. Read [CONTRIBUTING.md](CONTRIBUTING.md) before your first ticket.
 
@@ -50,18 +50,19 @@ an invalid one.
 
 Run from the repository root.
 
-| Command                        | What it does                                               |
-| ------------------------------ | ---------------------------------------------------------- |
-| `npm run dev`                  | Starts the server (nodemon) and the client (Vite) together |
-| `npm run lint`                 | ESLint on server and client                                |
-| `npm test`                     | Server tests (Jest), then client tests (Vitest)            |
-| `npm run format`               | Formats everything with Prettier                           |
-| `npm run format:check`         | Checks formatting without writing                          |
-| `npm run dev -w server`        | Server only, on http://localhost:3000                      |
-| `npm run dev -w client`        | Client only, on http://localhost:5173 (proxies `/api`)     |
-| `npm run test:watch -w client` | Client tests in watch mode                                 |
-| `npm run build -w client`      | Production build of the client into `client/dist`          |
-| `npm start -w server`          | Server without nodemon                                     |
+| Command                        | What it does                                                      |
+| ------------------------------ | ----------------------------------------------------------------- |
+| `npm run dev`                  | Starts the server (`node --watch`) and the client (Vite) together |
+| `npm run lint`                 | ESLint on server and client, then the type check                  |
+| `npm run typecheck`            | TypeScript type check (`tsc`) on server and client                |
+| `npm test`                     | Server tests, then client tests (Vitest)                          |
+| `npm run format`               | Formats everything with Prettier                                  |
+| `npm run format:check`         | Checks formatting without writing                                 |
+| `npm run dev -w server`        | Server only, on http://localhost:3000                             |
+| `npm run dev -w client`        | Client only, on http://localhost:5173 (proxies `/api`)            |
+| `npm run test:watch -w client` | Client tests in watch mode                                        |
+| `npm run build -w client`      | Production build of the client into `client/dist`                 |
+| `npm start -w server`          | Server without watch mode                                         |
 
 Git hooks run automatically: `pre-commit` lints and formats your staged files, and `commit-msg`
 rejects messages that do not follow the [commit convention](CONTRIBUTING.md#commit-messages).
@@ -70,24 +71,24 @@ rejects messages that do not follow the [commit convention](CONTRIBUTING.md#comm
 
 ```
 taskflow/
-  server/                       Express API (CommonJS)
+  server/                       Express API (TypeScript, ES modules; Node runs .ts directly)
     src/
-      app.js                    builds the Express app (no listen); used by tests
-      server.js                 connects to MongoDB, then listens
-      config/env.js             validated, frozen config from .env
-      data/db.js                connectDB / disconnectDB
-      models/constants.js       shared enums (roles, statuses, priorities…)
-      routes/                   one router per track, mounted under /api/v1 in routes/index.js
+      app.ts                    builds the Express app (no listen); used by tests
+      server.ts                 connects to MongoDB, then listens
+      config/env.ts             validated, frozen config from .env
+      data/db.ts                connectDB / disconnectDB
+      models/constants.ts       shared enums and their types (roles, statuses, priorities…)
+      routes/                   one router per track, mounted under /api/v1 in routes/index.ts
       controllers/              HTTP in/out only
       services/                 business rules
       middlewares/              errorHandler, notFound, validate (zod)
       utils/                    AppError, pagination
-    tests/                      Jest + Supertest
-  client/                       React app (Vite, ESM)
+    tests/                      Vitest + Supertest; helpers/db.ts for database tests
+  client/                       React app (Vite, TypeScript)
     src/
-      main.jsx                  providers: TanStack Query, router
-      App.jsx                   app shell
-      api/client.js             shared axios instance
+      main.tsx                  providers: TanStack Query, router
+      App.tsx                   app shell
+      api/client.ts             shared axios instance and API response types
       features/<track>/         each track's pages, components, hooks and API calls
       components/ hooks/ pages/ routes/   shared, cross-track code
   .github/                      CI, PR checks, PR template
