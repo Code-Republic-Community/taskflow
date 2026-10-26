@@ -26,9 +26,9 @@ gh api --method PATCH "repos/$REPO" --silent \
   -F allow_merge_commit=false \
   -F allow_rebase_merge=false \
   -f squash_merge_commit_title=PR_TITLE \
-  -f squash_merge_commit_message=PR_BODY \
+  -f squash_merge_commit_message=BLANK \
   -F delete_branch_on_merge=true
-echo "  ✓ merge: squash only (commit title = PR title, message = PR body)"
+echo "  ✓ merge: squash only (commit title = PR title, empty message)"
 echo "  ✓ head branches are deleted after merge"
 
 # 2. Ruleset on main.

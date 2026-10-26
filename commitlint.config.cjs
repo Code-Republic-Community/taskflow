@@ -20,7 +20,7 @@ const SCOPES = [
   "deps",
 ];
 
-const JIRA_SUBJECT = /^TF-\d+ \S/;
+const JIRA_SUBJECT = /^TF-\d+ [a-z0-9]/;
 
 module.exports = {
   extends: ["@commitlint/config-conventional"],
@@ -29,7 +29,7 @@ module.exports = {
       rules: {
         "subject-jira-key": ({ subject }) => [
           Boolean(subject) && JIRA_SUBJECT.test(subject),
-          'subject must start with the Jira key and a space, e.g. "TF-12 add login form"',
+          'subject must start with the Jira key, a space and a lowercase letter or digit, e.g. "TF-12 add login form"',
         ],
       },
     },

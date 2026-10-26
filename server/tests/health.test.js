@@ -1,6 +1,6 @@
 const request = require("supertest");
 const createApp = require("../src/app");
-const { connectDB, disconnectDB } = require("../src/data/db");
+const db = require("./helpers/db");
 
 describe("GET /api/v1/health", () => {
   const app = createApp();
@@ -13,8 +13,9 @@ describe("GET /api/v1/health", () => {
   });
 
   describe("with a database connection", () => {
-    beforeAll(() => connectDB(process.env.MONGODB_URI));
-    afterAll(() => disconnectDB());
+    beforeAll(() => db.connect());
+    afterEach(() => db.clearDatabase());
+    afterAll(() => db.disconnect());
 
     it("returns 200 with status ok and db connected", async () => {
       const res = await request(app).get("/api/v1/health");

@@ -67,10 +67,10 @@ jobs:
             ci
             deps
           requireScope: false
-          subjectPattern: ^TF-\d+ .+$
+          subjectPattern: ^TF-\d+ [a-z0-9].*$
           subjectPatternError: |
-            The subject "{subject}" in the PR title "{title}" must start with the Jira key,
-            e.g. "feat(issues): TF-6 add issue key generation".
+            The subject "{subject}" in the PR title "{title}" must start with the Jira key
+            followed by a lowercase letter or digit, e.g. "feat(issues): TF-6 add issue key generation".
 
       - name: Check title length (max 72)
         env:

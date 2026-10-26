@@ -5,7 +5,7 @@ PR title format (checked automatically, becomes the squash commit):
 
 ## Jira ticket
 
-https://<JIRA_SITE>.atlassian.net/browse/TF-<n>
+https://backend-2-3.atlassian.net/browse/TF-<n>
 
 ## What changed
 
