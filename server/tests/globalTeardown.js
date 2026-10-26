@@ -1,0 +1,3 @@
+module.exports = async function globalTeardown() {
+  await globalThis.__MONGOD__?.stop();
+};
