@@ -107,10 +107,19 @@ Pagination: `const { page, limit, skip } = parsePagination(req.query)` from
 ### Server tests
 
 - Jest + Supertest against `createApp()`, in `server/tests/<track>.test.js`.
-- A MongoDB in memory is started for the run (`process.env.MONGODB_URI`). Connect with
-  `connectDB(process.env.MONGODB_URI)` from `src/data/db.js` (not `mongoose.connect` directly:
-  `connectDB` carries a driver fix needed inside Jest), and clean your collections between
-  tests.
+- A MongoDB in memory is started for the run (`process.env.MONGODB_URI`). Use the helpers in
+  `tests/helpers/db.js`: `connect()`, `clearDatabase()` (empties every collection) and
+  `disconnect()`. Never call `mongoose.connect` directly: `connect()` goes through `connectDB`,
+  which carries a driver fix needed inside Jest.
+
+  ```js
+  const db = require("./helpers/db");
+
+  beforeAll(() => db.connect());
+  afterEach(() => db.clearDatabase());
+  afterAll(() => db.disconnect());
+  ```
+
 - Test success, validation failure, auth/permission failure and not-found paths, and assert the
   response shape.
 

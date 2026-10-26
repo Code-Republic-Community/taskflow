@@ -21,7 +21,7 @@ Jira project key: **TF**. Read [CONTRIBUTING.md](CONTRIBUTING.md) before your fi
 ## Setup from a fresh clone
 
 ```bash
-git clone git@github.com:<GITHUB_OWNER>/taskflow.git
+git clone git@github.com:Code-Republic-Community/taskflow.git
 cd taskflow
 nvm use                                  # Node 24
 npm install                              # installs server + client, activates git hooks
