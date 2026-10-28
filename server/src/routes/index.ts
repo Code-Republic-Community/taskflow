@@ -6,4 +6,4 @@ import { authRoutes } from "./auth.routes.ts";
 export const router = Router();
 
 router.use("/health", healthRoutes);
-router.use("/auth/", authRoutes);
+router.use("/auth", authRoutes);
