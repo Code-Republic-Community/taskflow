@@ -20,7 +20,7 @@ type User = {
   active: boolean;
 };
 
-export const requireAuth = (): RequestHandler => async (req, _res, next) => {
+export const requireAuth: RequestHandler = async (req, _res, next) => {
   const authorization = req.headers.authorization;
   if (!authorization) throw new AppError("Authorization failed", 401);
   const [authtype, token] = authorization.split(" ");
