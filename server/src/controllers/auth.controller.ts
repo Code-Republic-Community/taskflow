@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { registerService } from "../services/auth.service.ts";
+import { loginService, registerService } from "../services/auth.service.ts";
 import type { RequestHandler } from "express";
 import { AppError } from "../utils/AppError.ts";
 import { AUTH_SUCCESS } from "../constants/auth.constants.ts";
@@ -18,6 +18,25 @@ export async function register(req: Request, res: Response) {
         email: user.email,
         role: user.role,
       },
+    },
+  });
+}
+
+export async function login(req: Request, res: Response) {
+  const { email, password } = req.body;
+
+  const { user, token } = await loginService(email, password);
+
+  res.status(AUTH_SUCCESS.LOGIN.statusCode).json({
+    success: true,
+    data: {
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+      token: token,
     },
   });
 }
