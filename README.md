@@ -14,7 +14,7 @@ Jira project key: **TF**. Read [CONTRIBUTING.md](CONTRIBUTING.md) before your fi
 
 ## Requirements
 
-- **Node.js 24** (see `.nvmrc`; run `nvm use`). Node 22 also works if you are on 22.22 or newer.
+- **Node.js 24** (see `.nvmrc`; run `nvm use`). Node 22 also works if you are on 22.17 or newer.
 - **MongoDB 7+** running locally, or a free MongoDB Atlas cluster.
 - Git, and a GitHub account with access to the repository.
 
