@@ -5,11 +5,11 @@
   "type": "module",
   "main": "src/server.ts",
   "engines": {
-    "node": ">=22"
+    "node": ">=22.17"
   },
   "scripts": {
-    "start": "node src/server.ts",
-    "dev": "node --watch src/server.ts",
+    "start": "node --experimental-strip-types src/server.ts",
+    "dev": "node --watch --experimental-strip-types src/server.ts",
     "lint": "eslint .",
     "typecheck": "tsc",
     "test": "vitest run",
