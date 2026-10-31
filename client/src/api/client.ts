@@ -30,6 +30,8 @@ export interface ApiErrorBody {
   };
 }
 
+export type FieldErrors = Record<string, string>;
+
 const TOKEN_KEY = "taskflow.token";
 export const getToken = () => localStorage.getItem(TOKEN_KEY);
 export const setToken = (token: string) => localStorage.setItem(TOKEN_KEY, token);
@@ -94,3 +96,20 @@ api.interceptors.request.use((config) => {
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
+
+export function getFieldErrors(error: unknown): FieldErrors {
+  if (!(error instanceof ApiError) || !Array.isArray(error.details)) return {};
+
+  const result: FieldErrors = {};
+  for (const item of error.details) {
+    if (
+      typeof item === "object" &&
+      item !== null &&
+      typeof item.field === "string" &&
+      typeof item.message === "string"
+    ) {
+      result[item.field] = item.message;
+    }
+  }
+  return result;
+}

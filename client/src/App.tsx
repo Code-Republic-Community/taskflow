@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { api, getErrorMessage, type ApiResponse } from "./api/client";
+import { useUnauthorizedRedirect } from "./features/auth/useUnauthorizedRedirect";
 
 interface Health {
   status: "ok";
@@ -28,6 +29,7 @@ function ApiStatus() {
 }
 
 export default function App() {
+  useUnauthorizedRedirect();
   return (
     <main>
       <h1>TaskFlow</h1>
