@@ -3,6 +3,7 @@ import { PROJECT_ROLES, type ProjectRole } from "../models/constants.ts";
 import { findProjectByKey, type ProjectRef } from "../services/project.service.ts";
 import { AppError } from "../utils/AppError.ts";
 import { AUTH_ERRORS } from "../constants/auth.constants.ts";
+import { PROJECT_ERRORS } from "../constants/project.constants.ts";
 
 // Lets handlers after this middleware use req.project
 declare module "express-serve-static-core" {
@@ -36,13 +37,13 @@ export const requireProjectRole = (minRole: ProjectRole): RequestHandler => {
     }
 
     if (!projectKey) {
-      throw new AppError("Project not found", 404);
+      throw new AppError(PROJECT_ERRORS.NOT_FOUND.message, PROJECT_ERRORS.NOT_FOUND.statusCode);
     }
 
     const project = await findProjectByKey(projectKey);
 
     if (!project) {
-      throw new AppError("Project not found", 404);
+      throw new AppError(PROJECT_ERRORS.NOT_FOUND.message, PROJECT_ERRORS.NOT_FOUND.statusCode);
     }
 
     // Global admin has access to every project
@@ -56,14 +57,14 @@ export const requireProjectRole = (minRole: ProjectRole): RequestHandler => {
 
     // Do not reveal that the project exists
     if (!membership) {
-      throw new AppError("Project not found", 404);
+      throw new AppError(PROJECT_ERRORS.NOT_FOUND.message, PROJECT_ERRORS.NOT_FOUND.statusCode);
     }
 
     const userRole = PROJECT_ROLES.indexOf(membership.role);
     const requiredRole = PROJECT_ROLES.indexOf(minRole);
 
     if (userRole < requiredRole) {
-      throw new AppError("Forbidden", 403);
+      throw new AppError(PROJECT_ERRORS.FORBIDDEN.message, PROJECT_ERRORS.FORBIDDEN.statusCode);
     }
 
     req.project = project;
