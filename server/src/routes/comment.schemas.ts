@@ -1,14 +1,23 @@
-// import { z } from "zod";
-export {};
+import { z } from "zod";
 
-// shared: MongoDB id = 24-character string of 0-9 and a-f
-// const objectId = ...
+const objectId = z
+  .string()
+  .length(24)
+  .regex(/^[0-9a-f]+$/);
 
 // --- Part M ---
-// issueIdParamsSchema: object with issueId (objectId)
-// listQuerySchema: page (number >= 1) and limit (number 1-100), both optional.
-//                  They come from the URL as strings -> coerce to number (z.coerce)
-// commentBodySchema: object with body - string, trim first, then length 1-5000
+export const issueIdParamsSchema = z.object({
+  issueId: objectId,
+});
+
+export const listQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).optional(),
+  limit: z.coerce.number().int().min(1).max(100).optional(),
+});
+
+export const commentBodySchema = z.object({
+  body: z.string().trim().min(1).max(5000),
+});
 
 // --- Part A ---
 // commentIdParamsSchema: object with commentId (objectId)
