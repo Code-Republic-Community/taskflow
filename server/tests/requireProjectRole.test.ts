@@ -30,7 +30,9 @@ const users = {
 
 const projects: ProjectRef[] = [
   {
+    _id: new Types.ObjectId(),
     key: "TF",
+    issueCounter: 0,
     members: [
       { user: users.owner._id, role: "owner" },
       { user: users.member._id, role: "member" },

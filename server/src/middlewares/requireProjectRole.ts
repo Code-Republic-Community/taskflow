@@ -1,5 +1,5 @@
 import type { RequestHandler } from "express";
-import { PROJECT_ROLES, type ProjectRole } from "../models/constants.ts";
+import { PROJECT_ROLES, ROLES, type ProjectRole } from "../models/constants.ts";
 import { findProjectByKey, type ProjectRef } from "../services/project.service.ts";
 import { AppError } from "../utils/AppError.ts";
 import { AUTH_ERRORS } from "../constants/auth.constants.ts";
@@ -11,6 +11,8 @@ declare module "express-serve-static-core" {
     project?: ProjectRef;
   }
 }
+
+const [ADMIN] = ROLES;
 
 // Use after requireAuth, e.g. requireProjectRole("member")
 export const requireProjectRole = (minRole: ProjectRole): RequestHandler => {
@@ -40,14 +42,14 @@ export const requireProjectRole = (minRole: ProjectRole): RequestHandler => {
       throw new AppError(PROJECT_ERRORS.NOT_FOUND.message, PROJECT_ERRORS.NOT_FOUND.statusCode);
     }
 
-    const project = await findProjectByKey(projectKey);
+    const project = await findProjectByKey(projectKey.toUpperCase());
 
     if (!project) {
       throw new AppError(PROJECT_ERRORS.NOT_FOUND.message, PROJECT_ERRORS.NOT_FOUND.statusCode);
     }
 
     // Global admin has access to every project
-    if (user.role === "admin") {
+    if (user.role === ADMIN) {
       req.project = project;
       return next();
     }

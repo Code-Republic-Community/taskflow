@@ -9,7 +9,9 @@ export interface ProjectMember {
 }
 
 export interface ProjectRef {
+  _id: Types.ObjectId;
   key: string;
+  issueCounter: number;
   members: ProjectMember[];
 }
 
