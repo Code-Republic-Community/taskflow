@@ -1,15 +1,16 @@
-import Issue from "../models/issue.ts";
+import Issue from "../models/Issue.ts";
 import { AppError } from "../utils/AppError.ts";
 
 import type { IssueData } from "../types/issue.types.ts";
-import type { Project } from "../types/project.tempTypes.ts";
 import type { User } from "../types/auth.types.ts";
+import type { ProjectRef } from "./project.service.ts";
 
-export async function createIssue(project: Project, data: IssueData, _user: User) {
-  //checking the assignee
-  if (data.assignee) {
+export async function createIssue(project: ProjectRef, data: IssueData, user: User) {
+  const assignee = data.assignee;
+
+  if (assignee) {
     const isMember = project.members.some(
-      (member) => member.user.toString() === data.assignee?.toString(),
+      (member) => member.user.toString() === assignee.toString(),
     );
 
     if (!isMember) {
@@ -17,7 +18,6 @@ export async function createIssue(project: Project, data: IssueData, _user: User
     }
   }
 
-  //epicId
   if (data.epicId) {
     const epic = await Issue.findOne({
       _id: data.epicId,
@@ -30,30 +30,22 @@ export async function createIssue(project: Project, data: IssueData, _user: User
     }
   }
 
-  //creating the issue(partly)
-  const issue = await Issue.create({
+  // TODO: Once the TF-4 Project model is available:
+  // - Atomically increment issueCounter using $inc.
+  // - Use the updated counter as the issue number.
+  // - Generate the key as PROJECTKEY-number.
+  return Issue.create({
     project: project._id,
-    key: "TEMP", // Temporary until TF-4 is available
-    number: 0, // Temporary until atomic numbering is implemented
+    key: "TEMP",
+    number: 0,
     title: data.title,
     description: data.description ?? "",
-    label: data.label ?? [],
+    labels: data.label ?? [],
     type: data.type,
     status: data.status,
     priority: data.priority,
-    assignee: data.assignee ?? null,
+    reporter: user._id,
+    assignee: assignee ?? null,
     epicId: data.epicId ?? null,
   });
-
-  return issue;
 }
-
-// The Issue model and the majority of the createIssue validation logic have been implemented.
-
-//ToDo:
-// Atomic issue numbering using $inc.
-// Automatic key generation in the PROJECTKEY-number format.
-// Testing consecutive key generation under parallel creation.
-
-// These features depend on the Project model (TF-4), specifically its key and issueCounter fields.
-// Implementation and testing will be completed once the Project model is available.

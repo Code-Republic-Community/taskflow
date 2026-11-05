@@ -1,11 +1,11 @@
 import mongoose from "mongoose";
 import { describe, it, expect, beforeAll, beforeEach, afterAll } from "vitest";
 
-import Issue from "../src/models/issue.ts";
+import Issue from "../src/models/Issue.ts";
 import { createIssue } from "../src/services/issue.service.ts";
 
 import type { User } from "../src/types/auth.types.ts";
-import type { Project } from "../src/types/project.tempTypes.ts";
+import type { ProjectRef } from "../src/services/project.service.ts";
 import type { IssueData } from "../src/types/issue.types.ts";
 
 import { connect, clearDatabase, disconnect } from "./helpers/db.ts";
@@ -33,7 +33,7 @@ const user2: User = {
 const project = {
   _id: new mongoose.Types.ObjectId(),
   members: [{ user: user1._id }, { user: user2._id }],
-} as Project;
+} as ProjectRef;
 
 describe("Issue service", () => {
   beforeAll(async () => {
@@ -94,7 +94,7 @@ describe("Issue service", () => {
     expect(issue).toBeDefined();
     expect(issue.title).toBe("Create login page");
     expect(issue.description).toBe("Implement the login page");
-    expect(issue.label).toEqual(["frontend", "backend"]);
+    expect(issue.labels).toEqual(["frontend", "backend"]);
     expect(issue.assignee?.toString()).toBe(user2._id.toString());
     expect(issue.project.toString()).toBe(project._id.toString());
     expect(issue.key).toBe("TEMP");
@@ -103,9 +103,10 @@ describe("Issue service", () => {
 
   it("should successfully create an issue linked to a valid epic", async () => {
     const epic = await Issue.create({
-      key: "TEMP-EPIC",
-      number: 0,
+      key: "TEST-1",
+      number: 1,
       project: project._id,
+      reporter: user1._id,
       title: "Authentication",
       type: "epic",
       status: "todo",

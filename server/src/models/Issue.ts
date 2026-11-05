@@ -30,11 +30,19 @@ const issueSchema = new mongoose.Schema(
       type: String,
       enum: ISSUE_STATUSES,
       required: true,
+      default: "todo",
     },
 
     priority: {
       type: String,
       enum: PRIORITIES,
+      required: true,
+      default: "medium",
+    },
+
+    reporter: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
       required: true,
     },
 
@@ -50,7 +58,7 @@ const issueSchema = new mongoose.Schema(
       default: "",
     },
 
-    label: {
+    labels: {
       type: [String],
       default: [],
     },
@@ -72,6 +80,8 @@ const issueSchema = new mongoose.Schema(
     strict: "throw",
   },
 );
+
+issueSchema.index({ project: 1, number: 1 }, { unique: true });
 
 const Issue = mongoose.model("Issue", issueSchema);
 
